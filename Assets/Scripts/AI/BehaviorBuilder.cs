@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class BehaviorBuilder
 {
+    private static Transform wp1 = GameObject.Find("wp1").transform;
+    private static Transform wp2 = GameObject.Find("wp2").transform;
+    private static Transform wp3 = GameObject.Find("wp3").transform;
+
+
     public static BehaviorTree MakeTree(EnemyController agent)
     {
         BehaviorTree result = null;
@@ -55,21 +60,21 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
                         new Dist1MinQuery(),
-                        new GoTo(<wp2>)
+                        new GoTo(wp2, 0.5f)
                     }),
 
                     new Selector(new BehaviorTree[] {
 
                         new Sequence(new BehaviorTree[] {
                             new Dist2MinQuery(),
-                            new GoTo(<wp1>)
+                            new GoTo(wp1, 0.5f)
                         }),
 
                         new Selector(new BehaviorTree[] {
 
                             new Sequence(new BehaviorTree[] {
                                 new Dist3MinQuery(),
-                                new GoTo(<wp3>)
+                                new GoTo(wp3, 0.5f)
                             }),
 
                             new MoveToPlayer(agent.GetAction("attack").range)
