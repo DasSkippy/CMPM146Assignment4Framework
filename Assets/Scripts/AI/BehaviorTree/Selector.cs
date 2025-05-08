@@ -24,8 +24,7 @@ public class Selector : InteriorNode
         {
             current_child++;
         }
-
-        if ()
+        
         return Result.IN_PROGRESS;
     }
 
