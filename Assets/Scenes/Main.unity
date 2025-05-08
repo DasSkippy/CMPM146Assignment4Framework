@@ -4722,7 +4722,7 @@ GameObject:
   - component: {fileID: 1397255531}
   - component: {fileID: 1397255532}
   m_Layer: 0
-  m_Name: wp1
+  m_Name: safezone 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52642,7 +52642,7 @@ GameObject:
   - component: {fileID: 1954287761}
   - component: {fileID: 1954287762}
   m_Layer: 0
-  m_Name: wp3
+  m_Name: safezone 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -53404,7 +53404,7 @@ GameObject:
   - component: {fileID: 2098814355}
   - component: {fileID: 2098814356}
   m_Layer: 0
-  m_Name: wp2
+  m_Name: safezone 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
