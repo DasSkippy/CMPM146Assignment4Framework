@@ -5,6 +5,38 @@ public class BehaviorBuilder
     public static BehaviorTree MakeTree(EnemyController agent)
     {
         BehaviorTree result = null;
+
+
+
+        new Selector(new BehaviorTree[] {
+
+            new Selector(new BehaviorTree[] {
+
+                new Sequence(new BehaviorTree[] {
+
+                    new PlayerInRangeQuery(15f), // try and change 15 to something like: GameManager.Instance.player....
+                    new MoveToPlayer(agent.GetAction("attack").range),
+                    new Attack()
+
+                }),
+
+                new Sequence(new BehaviorTree[] {
+
+                    new EnemiesInRangeQuery(3f),
+                    new AttackSequence()
+
+                })
+                
+            }),
+
+            new avoidplayer()
+
+        });
+
+
+
+
+
         if (agent.monster == "warlock")
         {
             result = new Sequence(new BehaviorTree[] {
@@ -38,3 +70,5 @@ public class BehaviorBuilder
         return result;
     }
 }
+
+
