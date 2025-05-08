@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class BehaviorBuilder
 {
-    private static Transform wp1 = GameObject.Find("wp1").transform;
-    private static Transform wp2 = GameObject.Find("wp2").transform;
-    private static Transform wp3 = GameObject.Find("wp3").transform;
+    private static Transform wp1 = GameObject.Find("safezone 1").transform;
+    private static Transform wp2 = GameObject.Find("safezone 2").transform;
+    private static Transform wp3 = GameObject.Find("safezone 3").transform;
 
 
     public static BehaviorTree MakeTree(EnemyController agent)
