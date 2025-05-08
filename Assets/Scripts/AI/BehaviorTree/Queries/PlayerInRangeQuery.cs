@@ -1,3 +1,7 @@
+using UnityEngine;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
 public class PlayerInRangeQuery : BehaviorTree
 {
     float distance;
