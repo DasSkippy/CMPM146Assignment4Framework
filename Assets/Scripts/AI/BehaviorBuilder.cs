@@ -31,7 +31,7 @@ public class BehaviorBuilder
             //                            new MoveToPlayer(agent.GetAction("attack").range),
             //                            new Attack()
             //                          });
-            new Selector(new BehaviorTree[] {
+            result = new Selector(new BehaviorTree[] {
 
                 new Selector(new BehaviorTree[] {
 

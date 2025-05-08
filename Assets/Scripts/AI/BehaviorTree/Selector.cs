@@ -9,7 +9,7 @@ public class Selector : InteriorNode
         if (current_child >= children.Count)
         {
             current_child = 0;
-            return Result.SUCCESS;
+            return Result.FAILURE;
         }
 
         Result res = children[current_child].Run();
@@ -17,14 +17,14 @@ public class Selector : InteriorNode
         if (res == Result.SUCCESS)
         {
             current_child = 0;
-            return Result.FAILURE;
+            return Result.SUCCESS;
         }
 
         if (res == Result.FAILURE) 
         {
             current_child++;
         }
-        
+
         return Result.IN_PROGRESS;
     }
 
