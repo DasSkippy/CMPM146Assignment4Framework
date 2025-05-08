@@ -1,8 +1,8 @@
 public class PlayerInRangeQuery : BehaviorTree
 {
+    float distance;
     public override Result Run()
     {
-        float distance;
 
         Vector3 direction = GameManager.Instance.player.transform.position - agent.transform.position;
         if (direction.magnitude < distance) {
