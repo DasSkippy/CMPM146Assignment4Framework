@@ -1,65 +1,38 @@
 using UnityEngine;
 
-public class NearestEnemyOfTypeQuery : BehaviorTree
+public class LessThanNEnemies : BehaviorTree
 {
-    readonly string _type;
-    public NearestEnemyOfTypeQuery(string type) { _type = type; }
+    readonly float _n;
+    public LessThanNEnemies(float n) {
+        _n = n;
+    }
 
     public override Result Run()
     {
-        // ask GameManager for the overall closest enemy
-        var go = GameManager.Instance.GetClosestEnemy(agent.transform.position);
-        if (go == null) 
-            return Result.FAILURE;
+        var enemies = GameManager.Instance.GetEnemiesInRange(agent.transform.position, Mathf.Infinity);
 
-        // grab its controller and validate
-        var e = go.GetComponent<EnemyController>();
-        if (e == null || e.monster != _type) {
-            return Result.FAILURE;
-        }
-            
-
-        // bingo — set target and report success
-        agent.target = e.transform;
-        return Result.SUCCESS;
+        if (enemies.Count < _n)
+            return Result.SUCCESS;
+        return Result.FAILURE;
     }
 }
 
+public class MoreThanNEnemies : BehaviorTree
+{
+    readonly float _n;
+    public MoreThanNEnemies(float n) {
+        _n = n;
+    }
 
-// 2) pick the ally with lowest current HP
-// public class LowestHpEnemyQuery : BehaviorTree
-// {
-//     public override Result Run()
-//     {
-//         var gos = GameManager.Instance.GetEnemiesInRange(
-//             agent.transform.position,
-//             Mathf.Infinity
-//         );
-//         EnemyController lowest = null;
-//         float lowHp = float.MaxValue;
+    public override Result Run()
+    {
+        var enemies = GameManager.Instance.GetEnemiesInRange(agent.transform.position, Mathf.Infinity);
 
-//         foreach (var go in gos)
-//         {
-//             var e = go.GetComponent<EnemyController>();
-//             if (e == null || e.dead) 
-//                 continue;
-
-//             float h = e.hp;
-//             if (h < lowHp)
-//             {
-//                 lowHp = h;
-//                 lowest = e;
-//             }
-//         }
-
-//         if (lowest != null)
-//         {
-//             agent.target = lowest.transform;
-//             return Result.SUCCESS;
-//         }
-//         return Result.FAILURE;
-//     }
-// }
+        if (enemies.Count > _n)
+            return Result.SUCCESS;
+        return Result.FAILURE;
+    }
+}
 
 public static class EnemyAlert
 {
@@ -70,11 +43,18 @@ public static class EnemyAlert
 
 public class RaiseAlertNode : BehaviorTree
 {
-    // replace “BehaviorStatus” and “Evaluate” with whatever your
-    // base class actually uses (e.g. Execute, Run, etc.)
     public override Result Run()
     {
         EnemyAlert.RaiseAlert();
+        return Result.SUCCESS;
+    }
+}
+
+public class ClearAlertNode : BehaviorTree
+{
+    public override Result Run()
+    {
+        EnemyAlert.ClearAlert();
         return Result.SUCCESS;
     }
 }
@@ -87,7 +67,32 @@ public class GlobalAlertQuery : BehaviorTree
             ? Result.SUCCESS 
             : Result.FAILURE;
     }
-    // no SetAgent override needed, the MakeTree loop will assign
+}
+
+public static class SkeletonAlert
+{
+    public static bool IsAlerted2 { get; private set; }
+    public static void RaiseAlert() => IsAlerted2 = true;
+    public static void ClearAlert() => IsAlerted2 = false;
+}
+
+public class RaiseSkeletonAlertNode : BehaviorTree
+{
+    public override Result Run()
+    {
+        SkeletonAlert.RaiseAlert();
+        return Result.SUCCESS;
+    }
+}
+
+public class GlobalSkeletonAlertQuery : BehaviorTree
+{
+    public override Result Run()
+    {
+        return SkeletonAlert.IsAlerted2
+            ? Result.SUCCESS 
+            : Result.FAILURE;
+    }
 }
 
 public class BehaviorBuilder
@@ -95,7 +100,7 @@ public class BehaviorBuilder
     private static Transform wp1 = GameObject.Find("safezone 1").transform;
     private static Transform wp2 = GameObject.Find("safezone 2").transform;
     private static Transform wp3 = GameObject.Find("safezone 3").transform;
-    // private static Transform wp1first = GameObject.Find("safezone1first").transform;
+    private static Transform wp4 = GameObject.Find("wp1").transform;
 
 
     public static BehaviorTree MakeTree(EnemyController agent)
@@ -128,7 +133,6 @@ public class BehaviorBuilder
                     }),
 
                     new Sequence(new BehaviorTree[] {
-                        // new NearbyEnemiesQuery(1,5f),
                         new Selector(new BehaviorTree[] {
                             new Sequence(new BehaviorTree[] {
                                 new AbilityReadyQuery("permabuff"),
@@ -140,7 +144,8 @@ public class BehaviorBuilder
                                 new Heal()
                             })
                         }),
-                        new NearbyEnemiesQuery(5, 10f),
+                        new MoreThanNEnemies(10),
+                        new NearbyEnemiesQuery(6, 10f),
                         new RaiseAlertNode(),
                         new MoveToPlayer(agent.GetAction("attack").range),
                         new Attack()
@@ -154,22 +159,21 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
                         new Dist1MinQuery(),
-                        // new GoTo(wp1first, 5f),
-                        new GoTo(wp1, 2f)
+                        new GoTo(wp1, 5f)
                     }),
 
                     new Selector(new BehaviorTree[] {
 
                         new Sequence(new BehaviorTree[] {
                             new Dist2MinQuery(),
-                            new GoTo(wp2, 2f)
+                            new GoTo(wp2, 5f)
                         }),
 
                         new Selector(new BehaviorTree[] {
 
                             new Sequence(new BehaviorTree[] {
                                 new Dist3MinQuery(),
-                                new GoTo(wp3, 2f)
+                                new GoTo(wp3, 5f)
                             }),
 
                             new MoveToPlayer(agent.GetAction("attack").range)
@@ -233,7 +237,8 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
 
-                        new NearbyEnemiesQuery(5, 10f),
+                        new MoreThanNEnemies(10),
+                        new NearbyEnemiesQuery(6, 10f),
                         new RaiseAlertNode(),
                         new MoveToPlayer(agent.GetAction("attack").range),
                         new Attack()
@@ -247,22 +252,21 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
                         new Dist1MinQuery(),
-                        // new GoTo(wp1first, 5f),
-                        new GoTo(wp1, 2f)
+                        new GoTo(wp1, 4f)
                     }),
 
                     new Selector(new BehaviorTree[] {
 
                         new Sequence(new BehaviorTree[] {
                             new Dist2MinQuery(),
-                            new GoTo(wp2, 2f)
+                            new GoTo(wp2, 4f)
                         }),
 
                         new Selector(new BehaviorTree[] {
 
                             new Sequence(new BehaviorTree[] {
                                 new Dist3MinQuery(),
-                                new GoTo(wp3, 2f)
+                                new GoTo(wp3, 4f)
                             }),
 
                             new MoveToPlayer(agent.GetAction("attack").range)
@@ -278,7 +282,14 @@ public class BehaviorBuilder
             var alertAttack = new Sequence(new BehaviorTree[] {
                 new GlobalAlertQuery(),
                 new Loop(new BehaviorTree[] {
+                    new Sequence(new BehaviorTree[] {
+                        new LessThanNEnemies(3),
+                        new ClearAlertNode()
+                    }),
+
+
                     new MoveToPlayer(agent.GetAction("attack").range),
+                    new RaiseSkeletonAlertNode(),
                     new Attack()
                 })
             });
@@ -309,7 +320,8 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
 
-                        new NearbyEnemiesQuery(5, 10f),
+                        new MoreThanNEnemies(10),
+                        new NearbyEnemiesQuery(6, 10f),
                         new RaiseAlertNode(),
                         new MoveToPlayer(agent.GetAction("attack").range),
                         new Attack()
@@ -323,22 +335,21 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
                         new Dist1MinQuery(),
-                        // new GoTo(wp1first, 5f),
-                        new GoTo(wp1, 2f)
+                        new GoTo(wp1, 4f)
                     }),
 
                     new Selector(new BehaviorTree[] {
 
                         new Sequence(new BehaviorTree[] {
                             new Dist2MinQuery(),
-                            new GoTo(wp2, 2f)
+                            new GoTo(wp2, 4f)
                         }),
 
                         new Selector(new BehaviorTree[] {
 
                             new Sequence(new BehaviorTree[] {
                                 new Dist3MinQuery(),
-                                new GoTo(wp3, 2f)
+                                new GoTo(wp3, 4f)
                             }),
 
                             new MoveToPlayer(agent.GetAction("attack").range)
@@ -351,38 +362,44 @@ public class BehaviorBuilder
 
             });
         
-            // var alertAttack = new Sequence(new BehaviorTree[] {
-            //     new GlobalAlertQuery(),
-            //     new Loop(new BehaviorTree[] {
-            //         new Selector(new BehaviorTree[] {
-
-            //             new Sequence(new BehaviorTree[] {
-
-            //                 new PlayerInRangeQuery(5f),
-            //                 new Loop(new BehaviorTree[] {
-            //                     new MoveToPlayer(agent.GetAction("attack").range),
-            //                     new Attack()
-            //                 })
-
-            //             }),
-
-            //             new Sequence(new BehaviorTree[] {
-            //                 new NearestEnemyOfTypeQuery("zombie"),
-            //                 new GoTo(agent.target, 1f)
-            //             })
-
-
-            //         })
-
-            //     })
-            // });
             var alertAttack = new Sequence(new BehaviorTree[] {
                 new GlobalAlertQuery(),
                 new Loop(new BehaviorTree[] {
-                    new MoveToPlayer(agent.GetAction("attack").range),
-                    new Attack()
+                    new Selector(new BehaviorTree[] {
+
+                        new Sequence(new BehaviorTree[] {
+                            
+                            new GlobalSkeletonAlertQuery(),
+                            new Loop(new BehaviorTree[] {
+                                new MoveToPlayer(agent.GetAction("attack").range),
+                                new Attack()
+                            })
+
+                        }),
+
+                        new Sequence(new BehaviorTree[] {
+
+                            new GoTo(wp4, 2f),
+                            new PlayerInRangeQuery(5f),
+                            new Loop(new BehaviorTree[] {
+                                new MoveToPlayer(agent.GetAction("attack").range),
+                                new Attack()
+                            })
+
+                        })
+
+
+                    })
+
                 })
             });
+            // var alertAttack = new Sequence(new BehaviorTree[] {
+            //     new GlobalAlertQuery(),
+            //     new Loop(new BehaviorTree[] {
+            //         new MoveToPlayer(agent.GetAction("attack").range),
+            //         new Attack()
+            //     })
+            // });
 
             result = new Selector(new BehaviorTree[] {
                 alertAttack,
