@@ -121,7 +121,7 @@ public class BehaviorBuilder
 
                     new Sequence(new BehaviorTree[] {
 
-                        new PlayerInRangeQuery(15f), // try and change 15 to something like: GameManager.Instance.player....
+                        new PlayerInRangeQuery(5f), // try and change 15 to something like: GameManager.Instance.player....
                         new MoveToPlayer(agent.GetAction("attack").range),
                         new Attack()
 
@@ -185,10 +185,10 @@ public class BehaviorBuilder
             var alertAttack = new Sequence(new BehaviorTree[] {
                 new GlobalAlertQuery(),
                 new Loop(new BehaviorTree[] {
-                    new MoveToPlayer(agent.GetAction("attack").range),
+                    new MoveToPlayer(5f),
                     
                     new Sequence(new BehaviorTree[] {
-                            new PlayerInRangeQuery(5f),
+                            new PlayerInRangeQuery(7f),
                             new AbilityReadyQuery("buff"),
                             // new NearestEnemyOfTypeQuery("skeleton"),
                             new Buff()
